@@ -35,4 +35,12 @@ return [
         ],
     ],
 
+    'azure' => [
+        'key' => env('AZURE_KEY'),
+    ],
+
+    'gemini' => [
+        'key' => env('GEMINI_KEY'),
+    ]
+
 ];
