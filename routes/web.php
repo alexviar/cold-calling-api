@@ -24,7 +24,7 @@ Route::get('/call', function () {
     //     ->post('calls', [
     //         'connection_id' => env('TELNYX_CONNECTION_ID', $connId),
     //         'to' => '+5215527399115',
-    //         'from' => '+16413001752',
+    //         'from' => '',
     //         'stream_url' => 'wss://e325-190-180-69-197.ngrok-free.app/app/c4paajozb5fvobrdyx3z',
     //         // 'stream_track' => 'both_tracks',
     //     ]);
