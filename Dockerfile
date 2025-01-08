@@ -25,6 +25,8 @@ COPY . .
 # Instalar dependencias de Laravel
 RUN composer install --optimize-autoloader --no-dev
 
+RUN php artisan migrate
+
 # Exponer el puerto del WebSocket (configurado en Laravel Reverb)
 EXPOSE 8080
 
