@@ -1,49 +1,42 @@
 version: '3.8'
 
 services:
-  app:
-    build:
-      context: .
-      dockerfile: Dockerfile
-    ports:
-      - "80:80"
-      - "6001:6001"
-    volumes:
-      - .:/var/www/html
-    environment:
-      - APP_ENV=production
-      - APP_KEY=base64:YOUR_APP_KEY
-      - DB_HOST=db
-      - DB_PORT=3306
-      - DB_DATABASE=laravel
-      - DB_USERNAME=root
-      - DB_PASSWORD=root
-    depends_on:
-      - db
-
   websocket:
     build:
       context: .
       dockerfile: Dockerfile
-    command: php artisan reverb:serve
+    container_name: laravel-reverb
     ports:
-      - "6001:6001"
+      - "8080:8080"
+    environment:
+      - DB_HOST=mysql
+      - DB_PORT=3306
+      - DB_DATABASE=your_database_name
+      - DB_USERNAME=your_username
+      - DB_PASSWORD=your_password
     depends_on:
-      - app
+      - mysql
+    networks:
+      - app-network
 
-  db:
+  mysql:
     image: mysql:8.0
-    container_name: mysql
+    container_name: laravel-mysql
     restart: always
     environment:
-      MYSQL_ROOT_PASSWORD: root
-      MYSQL_DATABASE: laravel
-      MYSQL_USER: root
-      MYSQL_PASSWORD: root
+      MYSQL_ROOT_PASSWORD: root_password
+      MYSQL_DATABASE: your_database_name
+      MYSQL_USER: your_username
+      MYSQL_PASSWORD: your_password
     ports:
       - "3306:3306"
     volumes:
-      - dbdata:/var/lib/mysql
+      - mysql_data:/var/lib/mysql
+    networks:
+      - app-network
 
 volumes:
-  dbdata:
+  mysql_data:
+
+networks:
+  app-network:
