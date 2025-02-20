@@ -35,4 +35,20 @@ return [
         ],
     ],
 
+    'azure' => [
+        'key' => env('AZURE_KEY'),
+    ],
+
+    'gemini' => [
+        'key' => env('GEMINI_KEY'),
+    ],
+
+    'telnyx' => [
+        'key' => env('TELNYX_KEY'),
+        'public_key' => env('TELNYX_KEY'),
+        'from_number' => env('TELNYX_FROM_NUMBER'),
+        'connection_id' => env('TELNYX_CONNECTION_ID'),
+        'webhook_url' => env('TELNYX_WEBHOOK_URL'),
+    ]
+
 ];

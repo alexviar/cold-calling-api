@@ -1,0 +1,40 @@
+<?php
+
+namespace App\Models;
+
+use Illuminate\Database\Eloquent\Casts\Attribute;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Support\Facades\Storage;
+
+class Campaign extends Model
+{
+    /** @use HasFactory<\Database\Factories\CampaignFactory> */
+    use HasFactory;
+
+    protected $fillable = [
+        'name',
+        'prompt',
+        'file_path',
+        'phone_numbers',
+        'start_date',
+        'closed_at'
+    ];
+
+    protected $casts = [
+        'phone_numbers' => 'array',
+    ];
+
+    public function information(): Attribute
+    {
+        return Attribute::make(
+            get: fn() => base64_encode(Storage::disk('public')->get($this->file_path)),
+        );
+    }
+
+    public function calls(): HasMany
+    {
+        return $this->hasMany(CampaignCall::class);
+    }
+}
