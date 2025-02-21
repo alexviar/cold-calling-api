@@ -17,9 +17,10 @@ return new class extends Migration
             $table->string('phone_number');
             // Estado: pending, done, failed
             $table->tinyInteger('status')->unsigned()->default(1);
-            $table->json('telnyx_data')->nullable();
+            $table->datetime('called_at')->nullable();
+            $table->integer('duration')->unsigned()->nullable();
             $table->decimal('cost', 19, 6)->unsigned()->nullable();
-            // $table->timestamp('contacted_at')->nullable();
+            $table->json('telnyx_data')->nullable();
             // $table->text('conversation_excerpt')->nullable();
             // $table->string('recording_path')->nullable();
             // $table->string('interest_level')->nullable();

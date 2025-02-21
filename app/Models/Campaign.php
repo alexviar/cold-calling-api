@@ -39,7 +39,8 @@ class Campaign extends Model
                 1 => 'Pendiente',
                 2 => 'Activa',
                 3 => 'Pausada',
-                4 => 'Terminada'
+                4 => 'Terminada',
+                default => '-'
             }
         );
     }

@@ -16,7 +16,6 @@ return new class extends Migration
             $table->string('name');
             $table->text('prompt');
             $table->string('file_path')->nullable();
-            // $table->json('phone_numbers');
             $table->date('start_date');
             $table->tinyInteger('status')->unsigned()->default(1);
             $table->datetime('closed_at')->nullable();
