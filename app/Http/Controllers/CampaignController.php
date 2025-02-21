@@ -84,7 +84,7 @@ class CampaignController extends Controller
         // Guardar el archivo en el disco 'public' dentro de la carpeta 'campaign_files'
         $file = $request->file('file');
         $filePath = $file?->store('campaign_files', 'public');
-        if ($filePath) {
+        if ($filePath && $campaign->file_path) {
             Storage::delete($campaign->file_path);
         }
 

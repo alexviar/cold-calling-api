@@ -50,7 +50,7 @@ class Campaign extends Model
     public function information(): Attribute
     {
         return Attribute::make(
-            get: fn() => base64_encode(Storage::disk('public')->get($this->file_path)),
+            get: fn() => $this->file_path ? base64_encode(Storage::disk('public')->get($this->file_path)) : '',
         );
     }
 
