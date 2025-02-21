@@ -26,6 +26,26 @@ class Campaign extends Model
         'phone_numbers' => 'array',
     ];
 
+    protected $appends = [
+        'status_text'
+    ];
+
+    #region Attributes
+
+    public function statusText(): Attribute
+    {
+        return Attribute::make(
+            get: fn() => match ($this->status) {
+                1 => 'Pendiente',
+                2 => 'Activa',
+                3 => 'Pausada',
+                4 => 'Terminada'
+            }
+        );
+    }
+
+    #endregion
+
     public function information(): Attribute
     {
         return Attribute::make(

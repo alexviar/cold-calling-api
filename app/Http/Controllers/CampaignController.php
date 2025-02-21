@@ -57,10 +57,7 @@ class CampaignController extends Controller
             ]);
         }
 
-        return response()->json([
-            'message' => 'Campaña creada exitosamente.',
-            'campaign' => $campaign,
-        ], 201);
+        return $campaign;
     }
 
     public function show(Request $request, Campaign $campaign)
