@@ -6,6 +6,9 @@ use Illuminate\Http\Request;
 use App\Models\Campaign;
 use App\Models\CampaignCall;
 use App\Services\CallServiceContract;
+use Illuminate\Support\Arr;
+use Illuminate\Support\Facades\Date;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Validator;
@@ -33,77 +36,89 @@ class CampaignController extends Controller
         return $campaign;
     }
 
+    protected function validateCampaign(Request $request, ?Campaign $campaign = null)
+    {
+        $payload = $request->validate([
+            'name' => 'required|string|max:255',
+            'start_date' => 'sometimes|date',
+            'status' => 'required|in:' . implode(',', [Campaign::ACTIVE_STATUS, Campaign::PENDING_STATUS]),
+            'prompt' => 'required|string',
+            'greeting' => 'required|string',
+            'file' => [$campaign ? 'sometimes' : 'required', 'file', 'mimes:pdf'],
+            'phone_numbers' => [$campaign ? 'sometimes' : 'required', 'array'],
+            'phone_numbers.*' => [$campaign ? 'sometimes' : 'required', 'string'],
+        ]);
+
+        $status = $payload['status'];
+        if ($status == Campaign::ACTIVE_STATUS && $campaign?->start_date === null) {
+            $payload['start_date'] = Date::today();
+        }
+
+        $file = Arr::get($payload, 'file');
+        if ($file) {
+            $filePath = $file->store('campaign_files', 'public');
+            $payload['file_path'] = $filePath;
+        }
+
+        return Arr::only($payload, [
+            'name',
+            'start_date',
+            'status',
+            'phone_numbers'
+        ]) + [
+            'ai_config' => Arr::only($payload, [
+                'prompt',
+                'greeting',
+                'file_path'
+            ])
+        ];
+    }
+
     public function store(Request $request)
     {
-        // Validar la solicitud
-        $validator = Validator::make($request->all(), [
-            'name' => 'required|string|max:255',
-            'prompt' => 'required|string',
-            'file' => 'required|file|mimes:pdf',
-            'phone_numbers' => 'required|array',
-            'phone_numbers.*' => 'required|string',
-        ]);
+        $data = $this->validateCampaign($request);
 
-        if ($validator->fails()) {
-            return response()->json(['errors' => $validator->errors()], 422);
+        try {
+            return DB::transaction(function () use ($data) {
+                $campaign = Campaign::create(Arr::except($data, 'phone_numbers'));
+                foreach ($data['phone_numbers'] as $phone) {
+                    $campaign->calls()->create([
+                        'phone_number' => $phone,
+                    ]);
+                }
+            });
+        } catch (\Throwable $t) {
+            Storage::disk('public')->delete($data['file_path']);
         }
-
-        // Guardar el archivo en el disco 'public' dentro de la carpeta 'campaign_files'
-        $file = $request->file('file');
-        $filePath = $file?->store('campaign_files', 'public');
-
-        /** @var Campaign $campaign */
-        $campaign = Campaign::create([
-            'name' => $request->name,
-            'prompt' => $request->prompt,
-            'file_path' => $filePath,
-            'start_date' => $request->start_date,
-        ]);
-
-        // Crear un registro en campaign_contacts para cada número telefónico
-        foreach ($request->phone_numbers as $phone) {
-            $campaign->calls()->create([
-                'phone_number' => $phone,
-            ]);
-        }
-
-        return $campaign;
     }
 
     public function update(Request $request, Campaign $campaign)
     {
-        $validator = Validator::make($request->all(), [
-            'name' => 'required|string|max:255',
-            'prompt' => 'required|string',
-            'file' => 'sometimes|file|mimes:pdf',
-            'phone_numbers' => 'required|array',
-            'phone_numbers.*' => 'required|string',
-        ]);
+        $data = $this->validateCampaign($request, $campaign);
 
-        if ($validator->fails()) {
-            return response()->json(['errors' => $validator->errors()], 422);
-        }
+        try {
+            $oldCampaignFilepath = $campaign->file_path;
+            DB::beginTransaction();
 
-        // Guardar el archivo en el disco 'public' dentro de la carpeta 'campaign_files'
-        $file = $request->file('file');
-        $filePath = $file?->store('campaign_files', 'public');
-        if ($filePath && $campaign->file_path) {
-            Storage::delete($campaign->file_path);
-        }
-
-        $campaign->update([
-            'name' => $request->name,
-            'prompt' => $request->prompt,
-            'file_path' => $filePath ?? $campaign->file_path,
-            'start_date' => $request->start_date,
-        ]);
-
-        foreach ($request->phone_numbers as $phone) {
-            if (!$campaign->calls()->where('phone_number', $phone)->exists()) {
+            $campaign->update(Arr::except($data, 'phone_numbers'));
+            foreach ($data['phone_numbers'] as $phone) {
+                if ($campaign->calls()->where('phone_number', $phone)->exists()) {
+                    continue;
+                }
                 $campaign->calls()->create([
                     'phone_number' => $phone,
                 ]);
             }
+
+            DB::commit();
+        } catch (\Throwable $t) {
+            DB::rollBack();
+            Storage::disk('public')->delete($data['file_path']);
+        }
+        logger('hola mundooooooo');
+
+        if ($campaign->file_path != $oldCampaignFilepath) {
+            Storage::disk('public')->delete($oldCampaignFilepath);
         }
 
         return $campaign;
@@ -114,6 +129,12 @@ class CampaignController extends Controller
         $validated = $request->validate([
             'phone_number' => ['required']
         ]);
+
+        if (!isset($campaign->ai_config['greeting_audio_path'])) {
+            abort(response([
+                'message' => 'El audio de saludo aun no ha sido generado'
+            ], 409));
+        }
 
         $phoneNumber = $validated['phone_number'];
         $callService = resolve(CallServiceContract::class);

@@ -13,6 +13,7 @@ class Campaign extends Model
     /** @use HasFactory<\Database\Factories\CampaignFactory> */
     use HasFactory;
 
+    const PENDING_STATUS = 1;
     const ACTIVE_STATUS = 2;
 
     protected $fillable = [
