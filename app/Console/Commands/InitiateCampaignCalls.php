@@ -4,6 +4,7 @@ namespace App\Console\Commands;
 
 use App\Models\Campaign;
 use App\Models\CampaignCall;
+use App\Services\CallServiceContract;
 use Illuminate\Console\Command;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\Http;
@@ -49,42 +50,16 @@ class InitiateCampaignCalls extends Command
         }
 
         foreach ($contacts as $contact) {
-            // Preparar la carga para la llamada
-            $payload = [
-                'to'            => $contact->phone_number,
-                'from'          => config('services.telnyx.from_number'),
-                'connection_id' => config('services.telnyx.connection_id'),
-                // 'webhook_url'   => config('services.telnyx.webhook_url'),
-                'stream_url' => 'wss://telnyxdemo.eastus.cloudapp.azure.com/?' . http_build_query([
-                    'campaign_id' => $contact->campaign_id,
-                ]),
-                // 'stream_track' => 'both_tracks',
-                // Agrega otros parámetros requeridos por Telnyx, por ejemplo, para media streaming
-            ];
-
-            // Realizar la solicitud a Telnyx
-            $apiKey = config('services.telnyx.key');
-            $response = Http::baseUrl('https://api.telnyx.com/v2')
-                ->withHeader('Authorization', "Bearer $apiKey")
-                ->acceptJson()
-                ->asJson()
-                ->post('calls', $payload);
-
-            logger("Telnyx response", [
-                $response->status(),
-                $response->json()
+            $callService = resolve(CallServiceContract::class);
+            $callId = $callService->call($contact->phone_number, [
+                'campaign_id' => $contact->campaign_id
             ]);
 
-            if ($response->successful()) {
-                $this->info("Llamada iniciada para el teléfono: {$contact->phone_number}");
-                // Actualizar el estado del contacto, por ejemplo, a "contacted"
+            if ($callId) {
                 $contact->status = CampaignCall::STATUS_CALLING;
-                $contact->telnyx_data = ['call_control_id' => $response->json('data.call_control_id')];
+                $contact->telnyx_data = ['call_control_id' => $callId];
                 $contact->save();
             } else {
-                $this->error("No se pudo iniciar la llamada para el teléfono: {$contact->phone_number}");
-                // Aquí podrías registrar el error o actualizar el estado a "failed"
-
                 $contact->status = CampaignCall::STATUS_FAILED;
                 $contact->save();
             }
