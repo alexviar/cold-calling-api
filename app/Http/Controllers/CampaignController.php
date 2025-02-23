@@ -4,6 +4,8 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use App\Models\Campaign;
+use App\Models\CampaignCall;
+use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Validator;
 
@@ -104,5 +106,59 @@ class CampaignController extends Controller
         }
 
         return $campaign;
+    }
+
+    public function makeTestCall(Request $request, Campaign $campaign)
+    {
+        $validated = $request->validate([
+            'phone_number' => ['required']
+        ]);
+
+        $phoneNumber = $validated['phone_number'];
+        $successful = $this->makePhoneCall($phoneNumber, [
+            'campaign_id' => $campaign->id
+        ]);
+        if (!$successful) {
+            abort(response([
+                'message' => "No fue posible realizar una llamada al numero $phoneNumber"
+            ], 502));
+        }
+        return $campaign->calls()->create([
+            'is_test' => true,
+            'phone_number' => $phoneNumber
+        ]);
+    }
+
+    private function makePhoneCall($phoneNumber, $data = [])
+    {
+        $payload = [
+            'to'            => '+' . $phoneNumber,
+            'from'          => config('services.telnyx.from_number'),
+            'connection_id' => config('services.telnyx.connection_id'),
+            'stream_url'    => config('services.telnyx.websocket_url') . '/?' . http_build_query($data),
+            // 'stream_track' => 'both_tracks',
+        ];
+        // Realizar la solicitud a Telnyx
+        $apiKey = config('services.telnyx.key');
+        $response = Http::baseUrl('https://api.telnyx.com/v2')
+            ->withHeader('Authorization', "Bearer $apiKey")
+            ->acceptJson()
+            ->asJson()
+            ->post('calls', $payload);
+
+        logger("Telnyx response", [
+            $response->status(),
+            $response->json()
+        ]);
+
+        if ($response->successful()) {
+            logger("Llamada iniciada para el teléfono: {$phoneNumber}");
+
+            return true;
+        } else {
+            logger("No se pudo iniciar la llamada para el teléfono: {$phoneNumber}");
+
+            return false;
+        }
     }
 }

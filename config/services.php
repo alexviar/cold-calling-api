@@ -49,6 +49,7 @@ return [
         'from_number' => env('TELNYX_FROM_NUMBER'),
         'connection_id' => env('TELNYX_CONNECTION_ID'),
         'webhook_url' => env('TELNYX_WEBHOOK_URL'),
+        'websocket_url' => env('TELNYX_WEBSOCKET_URL'),
     ]
 
 ];

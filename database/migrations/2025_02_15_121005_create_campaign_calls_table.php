@@ -17,6 +17,7 @@ return new class extends Migration
             $table->string('phone_number');
             // Estado: pending, done, failed
             $table->tinyInteger('status')->unsigned()->default(1);
+            $table->boolean('is_test')->default(false);
             $table->datetime('called_at')->nullable();
             $table->integer('duration')->unsigned()->nullable();
             $table->decimal('cost', 19, 6)->unsigned()->nullable();

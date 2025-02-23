@@ -25,6 +25,7 @@ class CampaignCall extends Model
     protected $fillable = [
         'phone_number',
         'status',
+        'is_test',
         'call_control_id',
         // 'contacted_at',
         // 'conversation_excerpt',

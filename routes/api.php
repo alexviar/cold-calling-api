@@ -21,6 +21,7 @@ Route::controller(CampaignController::class)->prefix('campaigns')->group(functio
     Route::get('/{campaign}', [CampaignController::class, 'show']);
     Route::put('/{campaign}', [CampaignController::class, 'update']);
     Route::delete('/{campaign}', [CampaignController::class, 'destroy']);
+    Route::post('/{campaign}/test-calls', [CampaignController::class, 'makeTestCall']);
 });
 
 Route::prefix('webhooks')->group(function () {
