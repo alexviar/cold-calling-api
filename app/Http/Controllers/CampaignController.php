@@ -36,7 +36,7 @@ class CampaignController extends Controller
         $validator = Validator::make($request->all(), [
             'name' => 'required|string|max:255',
             'prompt' => 'required|string',
-            'file' => 'sometimes|file|mimes:pdf',
+            'file' => 'required|file|mimes:pdf',
             'phone_numbers' => 'required|array',
             'phone_numbers.*' => 'required|string',
         ]);
@@ -91,7 +91,7 @@ class CampaignController extends Controller
         $campaign->update([
             'name' => $request->name,
             'prompt' => $request->prompt,
-            'file_path' => $filePath,
+            'file_path' => $filePath ?? $campaign->file_path,
             'start_date' => $request->start_date,
         ]);
 
