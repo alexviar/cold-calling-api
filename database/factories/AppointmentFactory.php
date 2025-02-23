@@ -17,7 +17,8 @@ class AppointmentFactory extends Factory
     public function definition(): array
     {
         return [
-            //
+            'scheduled_date' => fake()->dateTimeBetween('-22 days', '+6 days'),
+            'client_name' => fake()->name()
         ];
     }
 }

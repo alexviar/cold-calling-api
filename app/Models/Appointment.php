@@ -15,7 +15,7 @@ class Appointment extends Model
 
     function call(): BelongsTo
     {
-        return $this->belongsTo(CampaignCall::class);
+        return $this->belongsTo(CampaignCall::class, 'campaign_call_id');
     }
 
     #endregion

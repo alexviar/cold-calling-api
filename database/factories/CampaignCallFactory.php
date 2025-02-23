@@ -2,6 +2,7 @@
 
 namespace Database\Factories;
 
+use App\Models\Campaign;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
 /**
@@ -17,7 +18,8 @@ class CampaignCallFactory extends Factory
     public function definition(): array
     {
         return [
-            //
+            'phone_number' => fake()->numerify('#########'),
+            'campaign_id' => Campaign::factory()
         ];
     }
 }

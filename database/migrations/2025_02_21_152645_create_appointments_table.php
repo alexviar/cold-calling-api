@@ -14,9 +14,9 @@ return new class extends Migration
     {
         Schema::create('appointments', function (Blueprint $table) {
             $table->id();
-            $table->datetime('scheduled_data');
+            $table->datetime('scheduled_date');
             $table->string('client_name');
-            $table->string('notes');
+            $table->string('notes')->nullable();
             $table->tinyInteger('status')->default(1);
             $table->foreignIdFor(CampaignCall::class)->constrained();
             $table->timestamps();

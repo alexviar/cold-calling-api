@@ -17,7 +17,10 @@ class CampaignFactory extends Factory
     public function definition(): array
     {
         return [
-            //
+            'name' => fake('es')->sentence(),
+            'start_date' => fake()->date(),
+            'prompt' => fake()->text(),
+            'file_path' => fake()->filePath(),
         ];
     }
 }
