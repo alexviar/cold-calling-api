@@ -2,6 +2,7 @@
 
 namespace App\Console\Commands;
 
+use App\Models\Campaign;
 use App\Models\CampaignCall;
 use Illuminate\Console\Command;
 use Carbon\Carbon;
@@ -39,7 +40,7 @@ class InitiateCampaignCalls extends Command
         $contacts = CampaignCall::where('status', CampaignCall::STATUS_PENDING)
             ->whereHas('campaign', function ($query) {
                 $query->where('start_date', '<=', Carbon::now())
-                    ->where('is_closed', false);
+                    ->where('status', Campaign::ACTIVE_STATUS);
             })->limit(1)->get();
 
         if ($contacts->isEmpty()) {
