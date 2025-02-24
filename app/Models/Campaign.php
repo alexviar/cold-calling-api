@@ -29,6 +29,8 @@ class Campaign extends Model
 
     protected $casts = [
         'phone_numbers' => 'array',
+        'start_date' => 'datetime',
+        'closed_at' => 'datetime'
     ];
 
     protected $appends = [
