@@ -7,7 +7,7 @@ use Illuminate\Support\Facades\Http;
 
 class TelnyxCall implements CallServiceContract
 {
-    public function call(string $phoneNumber, $data = []): string
+    public function call(string $phoneNumber, $data = []): ?string
     {
         $payload = [
             'to'            => '+' . $phoneNumber,
