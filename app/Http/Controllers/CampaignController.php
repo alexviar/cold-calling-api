@@ -132,7 +132,7 @@ class CampaignController extends Controller
             Storage::disk('public')->delete($oldCampaignFilepath);
         }
 
-        if ($campaign->greeting != $oldGreeting) {
+        if ($campaign->greeting != $oldGreeting && $oldGreetingAudioPath) {
             Storage::disk('public')->delete($oldGreetingAudioPath);
         }
 
