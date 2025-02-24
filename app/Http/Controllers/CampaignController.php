@@ -145,7 +145,7 @@ class CampaignController extends Controller
             'phone_number' => ['required']
         ]);
 
-        if (!isset($campaign->ai_config['greeting_audio_path'])) {
+        if (!isset($campaign->greeting_audio_path)) {
             abort(response([
                 'message' => 'El audio de saludo aun no ha sido generado'
             ], 409));
