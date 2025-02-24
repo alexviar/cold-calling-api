@@ -52,14 +52,20 @@ class Campaign extends Model
         );
     }
 
-    #endregion
-
     public function information(): Attribute
     {
         return Attribute::make(
             get: fn() => $this->file_path ? base64_encode(Storage::disk('public')->get($this->file_path)) : '',
         );
     }
+
+    public function greetingAudioContent(): Attribute
+    {
+        return Attribute::make(
+            get: fn() => $this->file_path ? base64_encode(Storage::disk('public')->get($this->greeting_audio_path)) : '',
+        );
+    }
+    #endregion
 
     public function calls(): HasMany
     {

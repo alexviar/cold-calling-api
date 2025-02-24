@@ -32,7 +32,10 @@ class CampaignController extends Controller
 
     public function show(Request $request, Campaign $campaign)
     {
-        $campaign->append('information');
+        if ($request->use_case == 'aiAgent') {
+            $campaign->append('information');
+            $campaign->append('greeting_audio_content');
+        }
         $campaign->loadMissing(['calls.appointment']);
         return $campaign;
     }
