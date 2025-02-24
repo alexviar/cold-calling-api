@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\CampaignCall;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Date;
 use Illuminate\Support\Facades\Log;
 
 class TelnyxController extends Controller
@@ -50,6 +51,9 @@ class TelnyxController extends Controller
     private function handleCallHangup($event)
     {
         $callControlId = data_get($event, 'data.payload.call_control_id');
+        $startTime = Date::parse(data_get($event, 'data.payload.start_time'));
+        $endTime = Date::parse(data_get($event, 'data.payload.end_time'));
+        $callDuration = round($startTime->diffInMilliseconds($endTime));
 
         $contact = CampaignCall::where('telnyx_data->call_control_id', $callControlId)->first();
 
@@ -60,7 +64,7 @@ class TelnyxController extends Controller
 
         $contact->update([
             'status' => CampaignCall::STATUS_DONE,
-            // 'duration' => $callDuration
+            'duration' => $callDuration
         ]);
     }
 
