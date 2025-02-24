@@ -2,6 +2,7 @@
 
 namespace App\Providers;
 
+use App\Integrations\GoogleTextToSpeech;
 use App\Integrations\TelnyxCall;
 use Illuminate\Support\ServiceProvider;
 
@@ -20,6 +21,11 @@ class AppServiceProvider extends ServiceProvider
             // }
 
             return new TelnyxCall();
+        });
+
+        $this->app->bind(\App\Services\VoiceSynthesizerContract::class, function () {
+
+            return new GoogleTextToSpeech();
         });
     }
 

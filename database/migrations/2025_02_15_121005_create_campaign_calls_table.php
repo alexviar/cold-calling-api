@@ -22,11 +22,13 @@ return new class extends Migration
             $table->integer('duration')->unsigned()->nullable();
             $table->decimal('cost', 19, 6)->unsigned()->nullable();
             $table->json('telnyx_data')->nullable();
-            // $table->text('conversation_excerpt')->nullable();
-            // $table->string('recording_path')->nullable();
-            // $table->string('interest_level')->nullable();
+            $table->json('transcript')->nullable();
+            $table->string('recording_path')->nullable();
+            $table->string('interest_level')->nullable();
             $table->foreignIdFor(Campaign::class)->constrained();
             $table->datetimes();
+
+            $table->unique(['campaign_id', 'phone_number']);
         });
     }
 

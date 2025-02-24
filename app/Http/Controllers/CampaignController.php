@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Jobs\GenerateGreetingAudio;
 use Illuminate\Http\Request;
 use App\Models\Campaign;
 use App\Models\CampaignCall;
@@ -40,7 +41,7 @@ class CampaignController extends Controller
     {
         $payload = $request->validate([
             'name' => 'required|string|max:255',
-            'start_date' => 'sometimes|date',
+            'start_date' => 'nullable|date',
             'status' => 'required|in:' . implode(',', [Campaign::ACTIVE_STATUS, Campaign::PENDING_STATUS]),
             'prompt' => 'required|string',
             'greeting' => 'required|string',
@@ -60,47 +61,55 @@ class CampaignController extends Controller
             $payload['file_path'] = $filePath;
         }
 
+        $payload['phone_numbers'] ??= [];
+
         return Arr::only($payload, [
             'name',
             'start_date',
             'status',
-            'phone_numbers'
-        ]) + [
-            'ai_config' => Arr::only($payload, [
-                'prompt',
-                'greeting',
-                'file_path'
-            ])
-        ];
+            'phone_numbers',
+
+            'prompt',
+            'greeting',
+            'file_path'
+        ]);
     }
 
     public function store(Request $request)
     {
         $data = $this->validateCampaign($request);
 
-        try {
-            return DB::transaction(function () use ($data) {
-                $campaign = Campaign::create(Arr::except($data, 'phone_numbers'));
-                foreach ($data['phone_numbers'] as $phone) {
-                    $campaign->calls()->create([
-                        'phone_number' => $phone,
-                    ]);
-                }
-            });
-        } catch (\Throwable $t) {
-            Storage::disk('public')->delete($data['file_path']);
-        }
+        return $this->transaction(function () use ($data) {
+            $campaign = Campaign::create(Arr::except($data, 'phone_numbers'));
+            foreach ($data['phone_numbers'] as $phone) {
+                $campaign->calls()->create([
+                    'phone_number' => $phone,
+                ]);
+            }
+            GenerateGreetingAudio::dispatchSync($campaign);
+
+            return $campaign;
+        }, function () use ($data) {
+            $filePath = Arr::get($data, 'file_path');
+            if ($filePath) {
+                Storage::disk('public')->delete($filePath);
+            }
+        });
     }
 
     public function update(Request $request, Campaign $campaign)
     {
         $data = $this->validateCampaign($request, $campaign);
 
-        try {
-            $oldCampaignFilepath = $campaign->file_path;
-            DB::beginTransaction();
+        $oldCampaignFilepath = $campaign->file_path;
+        $oldGreeting = $campaign->greeting;
+        $oldGreetingAudioPath = $campaign->greeting_audio_path;
 
+        $this->transaction(function () use ($campaign, $data, $oldGreeting) {
             $campaign->update(Arr::except($data, 'phone_numbers'));
+            if ($campaign->greeting !== $oldGreeting) {
+                GenerateGreetingAudio::dispatchSync($campaign);
+            }
             foreach ($data['phone_numbers'] as $phone) {
                 if ($campaign->calls()->where('phone_number', $phone)->exists()) {
                     continue;
@@ -109,16 +118,19 @@ class CampaignController extends Controller
                     'phone_number' => $phone,
                 ]);
             }
-
-            DB::commit();
-        } catch (\Throwable $t) {
-            DB::rollBack();
-            Storage::disk('public')->delete($data['file_path']);
-        }
-        logger('hola mundooooooo');
+        }, function () use ($data) {
+            $filePath = Arr::get($data, 'file_path');
+            if ($filePath) {
+                Storage::disk('public')->delete($filePath);
+            }
+        });
 
         if ($campaign->file_path != $oldCampaignFilepath) {
             Storage::disk('public')->delete($oldCampaignFilepath);
+        }
+
+        if ($campaign->greeting != $oldGreeting) {
+            Storage::disk('public')->delete($oldGreetingAudioPath);
         }
 
         return $campaign;

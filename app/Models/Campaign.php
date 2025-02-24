@@ -19,6 +19,8 @@ class Campaign extends Model
     protected $fillable = [
         'name',
         'prompt',
+        'greeting',
+        'greeting_audio_path',
         'file_path',
         'phone_numbers',
         'start_date',

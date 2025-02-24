@@ -14,11 +14,15 @@ return new class extends Migration
         Schema::create('campaigns', function (Blueprint $table) {
             $table->id();
             $table->string('name');
-            $table->text('prompt');
-            $table->string('file_path')->nullable();
             $table->date('start_date');
             $table->tinyInteger('status')->unsigned()->default(1);
-            $table->datetime('closed_at')->nullable();
+
+            $table->text('prompt');
+            $table->text('greeting');
+            $table->string('file_path')->nullable();
+            $table->string('greeting_audio_path')->nullable();
+
+            $table->$table->datetime('closed_at')->nullable();
             $table->datetimes();
         });
     }

@@ -23,14 +23,14 @@ class GenerateGreetingAudio implements ShouldQueue
      */
     public function handle(): void
     {
-        $greeting = $this->campaign->ai_config['greeting'];
+        $greeting = $this->campaign->greeting;
         $voiceSynthesizer = resolve(VoiceSynthesizerContract::class);
         $audioContent = $voiceSynthesizer->synthesize($greeting);
 
         $greetingAudioPath = 'campaign_files/' . Str::random(40) . '.mp3';
         Storage::disk('public')->put($greetingAudioPath, $audioContent);
 
-        $this->campaign->ai_config['greeting_audio_path'] = $greetingAudioPath;
+        $this->campaign->greeting_audio_path = $greetingAudioPath;
         $this->campaign->save();
     }
 }
