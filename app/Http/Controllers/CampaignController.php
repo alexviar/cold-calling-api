@@ -153,17 +153,20 @@ class CampaignController extends Controller
 
         $phoneNumber = $validated['phone_number'];
         $callService = resolve(CallServiceContract::class);
-        $successful = $callService->call($phoneNumber, [
+        $callId = $callService->call($phoneNumber, [
             'campaign_id' => $campaign->id
         ]);
-        if (!$successful) {
+        if (!$callId) {
             abort(response([
                 'message' => "No fue posible realizar una llamada al numero $phoneNumber"
             ], 502));
         }
         return $campaign->calls()->create([
             'is_test' => true,
-            'phone_number' => $phoneNumber
+            'phone_number' => $phoneNumber,
+            'telnyx_data' => [
+                'call_control_id' => $callId
+            ]
         ]);
     }
 }
