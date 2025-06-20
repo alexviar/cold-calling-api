@@ -30,7 +30,6 @@ RUN apt-get update && apt-get install -y \
 WORKDIR /var/www
 
 COPY . .
-COPY .env.example .env
 
 # Copiar la aplicación ya compilada desde el builder
 COPY --from=builder /app/vendor /var/www/vendor
@@ -38,8 +37,6 @@ COPY --from=builder /app/vendor /var/www/vendor
 # Ajustar permisos en directorios críticos
 RUN chown -R www-data:www-data storage bootstrap/cache \
     && chmod -R 775 storage bootstrap/cache
-
-RUN php artisan optimize
 
 EXPOSE 9000
 CMD ["php-fpm"]

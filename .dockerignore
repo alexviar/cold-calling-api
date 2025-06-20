@@ -2,10 +2,6 @@
 /vendor
 /node_modules
 
-# Archivos de entorno y configuración local
-.env
-.env.*.local
-
 # Archivos y directorios de control de versiones
 .git
 .gitignore
