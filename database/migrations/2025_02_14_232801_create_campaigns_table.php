@@ -22,7 +22,7 @@ return new class extends Migration
             $table->string('file_path')->nullable();
             $table->string('greeting_audio_path')->nullable();
 
-            $table->$table->datetime('closed_at')->nullable();
+            $table->datetime('closed_at')->nullable();
             $table->datetimes();
         });
     }
