@@ -13,9 +13,9 @@ class TelnyxController extends Controller
     {
         logger("Webhook", $request->all());
 
-        if (!$this->validateSignature($request)) {
-            return response()->json(['message' => 'Firma inválida'], 400);
-        }
+        // if (!$this->validateSignature($request)) {
+        //     return response()->json(['message' => 'Firma inválida'], 400);
+        // }
 
         $eventType = data_get($request->all(), 'data.event_type');
         if ($eventType == 'call.answered') {
