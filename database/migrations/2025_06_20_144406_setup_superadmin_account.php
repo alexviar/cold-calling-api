@@ -12,10 +12,11 @@ return new class extends Migration
      */
     public function up(): void
     {
+        $admin = config('auth.admin_user');
         User::create([
-            'name' => config('auth.admin_user', 'Super Admin'),
-            'email' => config('auth.admin_user.email', 'superadmin@example.com'),
-            'password' => config('auth.admin_user.password', 'password'),
+            'name' => $admin['name'] ?? 'Super Admin',
+            'email' => $admin['email'] ?? 'superadmin@example.com',
+            'password' => $admin['password'] ?? 'password',
         ]);
     }
 
