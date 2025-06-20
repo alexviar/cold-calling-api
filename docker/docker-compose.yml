@@ -3,12 +3,12 @@ services:
     build: 
       context: ..
       dockerfile: docker/php/Dockerfile
-    container_name: payerjuarez-api-php
+    container_name: llamasmart-api-php
     restart: unless-stopped
     working_dir: /var/www
     volumes:
-      - payerjuarez-bootstrap-cache:/var/www/bootstrap/cache
-      - payerjuarez-storage:/var/www/storage
+      - llamasmart-bootstrap-cache:/var/www/bootstrap/cache
+      - llamasmart-storage:/var/www/storage
     environment:
       - APP_NAME=${APP_NAME}
       - APP_TIMEZONE=${APP_TIMEZONE}
@@ -35,10 +35,10 @@ services:
     build: 
       context: ..
       dockerfile: docker/nginx/Dockerfile
-    container_name: payerjuarez-api-nginx
+    container_name: llamasmart-api-nginx
     restart: unless-stopped
     volumes:
-      - payerjuarez-storage:/var/www/storage:ro
+      - llamasmart-storage:/var/www/storage:ro
     expose:
       - "80"   
     depends_on:
@@ -55,5 +55,5 @@ networks:
   php:
 
 volumes:
-  payerjuarez-bootstrap-cache:
-  payerjuarez-storage:
+  llamasmart-bootstrap-cache:
+  llamasmart-storage:
